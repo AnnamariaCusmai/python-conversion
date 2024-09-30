@@ -1,0 +1,5 @@
+torch==1.12.0       # PyTorch, you can specify a version or leave it as torch
+tensorflow==2.10.0  # TensorFlow, adjust version based on your needs
+onnx==1.12.0        # ONNX for loading and manipulating ONNX models
+onnx-tf==1.9.0      # ONNX-TensorFlow conversion
+numpy==1.22.0       # NumPy for handling arrays
