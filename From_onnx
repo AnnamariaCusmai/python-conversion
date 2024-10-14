@@ -1,0 +1,54 @@
+import onnx
+from onnx_tf.backend import prepare
+import tensorflow as tf
+import numpy as np
+import torch
+
+# Load the ONNX model
+onnx_model_2 = onnx.load("model_modified.onnx")
+
+# Convert ONNX model to TensorFlow
+tf_rep = prepare(onnx_model_2, device='cpu')
+tf_rep.export_graph('NutANN.pb')
+
+print("Model has been converted to TensorFlow and saved as NutANN.pb")
+
+# Check inputs/outputs name
+input_names = [input.name for input in onnx_model_2.graph.input]
+output_names = [output.name for output in onnx_model_2.graph.output]
+
+print("Input names:", input_names)
+print("Output names:", output_names)
+
+# Define graph analysis functions
+def print_inputs(pb_filepath):
+    with tf.io.gfile.GFile(pb_filepath, "rb") as f:
+        graph_def = tf.compat.v1.GraphDef()
+        graph_def.ParseFromString(f.read())
+
+        with tf.Graph().as_default() as graph:
+            tf.import_graph_def(graph_def, name='')
+
+        input_list = []
+        for op in graph.get_operations():
+            if op.type == "Placeholder":
+                input_list.append(op.name)
+        print('Inputs:', input_list)
+
+def print_outputs(pb_filepath):
+    with open(pb_filepath, 'rb') as f:
+        graph_def = tf.compat.v1.GraphDef()
+        graph_def.ParseFromString(f.read())
+
+        name_list = []
+        input_list = []
+        for node in graph_def.node:
+            name_list.append(node.name)
+            input_list.extend(node.input)
+
+        outputs = set(name_list) - set(input_list)
+        print('Outputs:', list(outputs))
+
+# Print inputs and outputs of the converted model
+print_inputs('NutANN.pb')
+print_outputs('NutANN.pb')
